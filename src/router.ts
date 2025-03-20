@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express"
 import { validateDataInput } from "./services/middlewares/validateDataInput"
 import { userLoginSchema } from "./inputSchemas/userSchemas"
-import { login } from "./controllers/userController"
+import { listusers, login } from "./controllers/userController"
 
 const router = Router()
 
@@ -11,5 +11,6 @@ router.get("/", async (request: Request, response: Response): Promise<void> => {
 })
 
 router.post("/login", validateDataInput(userLoginSchema), login)
+router.get("/listusers", listusers)
 
 export default router
