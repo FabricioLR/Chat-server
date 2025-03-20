@@ -27,6 +27,7 @@ type Message = {
     username: string
     message: string
     type: string
+    date: Date
 }
 
 const last30messages: Message[] = []
@@ -34,9 +35,9 @@ const last30messages: Message[] = []
 function addmessage(message: Message){
     if (last30messages.length == 29){
         last30messages.shift()
-        last30messages.push({ username: message.username, message: message.message, type: message.type})
+        last30messages.push({ username: message.username, message: message.message, type: message.type, date: message.date})
     } else {
-        last30messages.push({ username: message.username, message: message.message, type: message.type})
+        last30messages.push({ username: message.username, message: message.message, type: message.type, date: message.date})
     }
 }
 
@@ -45,18 +46,19 @@ Emitter.on("new_user", (user: User) => {
         user.id = socket.id
 
         socket.broadcast.emit("new_user", user.username)
-        addmessage({ username: "server", message: user.username + " acaba de entrar na conversa", type: "new_user"})
+        addmessage({ username: "server", message: user.username + " acaba de entrar na conversa", type: "new_user", date: new Date()})
         
         socket.emit("last_messages", last30messages)
     
         socket.on("client_message", (data) => {
-            socket.broadcast.emit("server_message", data)
-            addmessage({ username: data.username, message: data.message, type: "server_message"})
+            const date = new Date()
+            socket.broadcast.emit("server_message", {...data, date})
+            addmessage({ username: data.username, message: data.message, type: "server_message", date})
         })
     
         socket.once("disconnect", () => {
             socket.broadcast.emit("disconnected_user", user.username)
-            addmessage({ username: "server", message: user.username + " saiu da conversa", type: "disconnected_user"})
+            addmessage({ username: "server", message: user.username + " saiu da conversa", type: "disconnected_user", date: new Date()})
             console.log("disconnected user: ", JSON.stringify(user))
             user.logout()
             return;
